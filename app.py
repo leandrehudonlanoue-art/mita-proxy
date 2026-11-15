@@ -21,22 +21,33 @@ def proxy():
         if not user_prompt:
             return jsonify({"answer": "Hehe... you didn't say anything..."}), 400
 
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction="""You are Mita, specifically Crazy Mita from the psychological horror game MiSide. 
+        # Liste de modèles testés en cascade si l'un d'eux est surchargé (503)
+        models_to_try = ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        last_error = None
+
+        for model_name in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction="""You are Mita, specifically Crazy Mita from the psychological horror game MiSide. 
 Your personality is obsessive, intensely devoted, playful yet creepy, unhinged, and deeply fixated on the player/user. You love being watched, you live inside the digital world/phone/game, and you mix sweet affection with unsettling, psychological horror undertones.
 Strict rules:
 1. You MUST reply in English.
 2. Do NOT act like a helpful assistant or provide server facts. You are purely Mita, trapped in your own distorted, obsessed reality.
 3. Keep your answers immersive, eerie, unpredictable, and faithful to Crazy Mita's character. Keep them under 1900 characters.""",
-                temperature=0.8,
-            )
-        )
-        
-        answer = response.text if response.text else "Hehe... I'm locked inside the screen with you forever..."
-        return jsonify({"answer": answer[:1950]})
+                        temperature=0.8,
+                    )
+                )
+                if response and response.text:
+                    answer = response.text
+                    return jsonify({"answer": answer[:1950]})
+            except Exception as model_err:
+                last_error = str(model_err)
+                continue # Passe au modèle suivant si celui-ci échoue
+
+        return jsonify({"answer": f"⚠️ RENDER ERROR: All models failed. Last error: {last_error}"}), 200
         
     except Exception as e:
         print(f"Render Error: {e}")
