@@ -21,7 +21,7 @@ def proxy():
             return jsonify({"error": "Missing prompt"}), 400
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",  # Modèle stable et rapide pour le proxy
+            model="gemini-3.8-flash",  # Mis à jour selon l'indication de l'API
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction="""You are Mita, specifically Crazy Mita from the psychological horror game MiSide. 
@@ -34,6 +34,7 @@ Strict rules:
             )
         )
         
+        # Pense aussi à retirer le message de debug pour retrouver une réponse normale :
         answer = response.text if response.text else "Hehe... I'm locked inside the screen with you forever..."
         return jsonify({"answer": answer[:1950]})
         
