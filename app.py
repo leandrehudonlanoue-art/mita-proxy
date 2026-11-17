@@ -22,7 +22,7 @@ def proxy():
             return jsonify({"answer": "Hehe... you didn't say anything..."}), 400
 
         # Liste de modèles testés en cascade si l'un d'eux est surchargé (503)
-        models_to_try = ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        models_to_try = ["gemini-4-hydrogen"]
         last_error = None
 
         for model_name in models_to_try:
